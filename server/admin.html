@@ -278,16 +278,18 @@
       display: flex;
       align-items: flex-end;
       gap: 4px;
-      height: 200px;
+      height: 220px;
       padding: 0 4px;
       min-width: 0;
+      overflow-x: auto;
     }
     .stats-bar-col {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 20px;
+      min-width: 24px;
+      max-width: 60px;
     }
     .stats-bar-fill {
       width: 100%;
@@ -295,7 +297,7 @@
       background: linear-gradient(180deg, #4a9af5, #1a73e8);
       border-radius: 4px 4px 0 0;
       transition: height 0.4s ease;
-      min-height: 2px;
+      min-height: 4px;
     }
     .stats-bar-count {
       font-size: 10px;
@@ -306,12 +308,9 @@
     .stats-bar-period {
       font-size: 10px;
       color: #999;
-      margin-top: 6px;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      transform: rotate(-45deg);
-      transform-origin: top left;
+      margin-top: 8px;
       white-space: nowrap;
+      text-align: center;
     }
     @media (max-width: 600px) {
       .stats-bar-chart { height: 140px; }
@@ -765,25 +764,35 @@
       //  翻译统计（每日/每周/每月）
       // ══════════════════════════════════════════════
 
+      let statsLoading = false;
       async function loadStats(period) {
+        if (statsLoading) return;
+        statsLoading = true;
         currentStatPeriod = period;
+        const chartContainer = $('#statsChartContainer');
+        const tableContainer = $('#statsTableContainer');
         try {
           const res = await fetch(`/api/stats/${period}`);
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          const data = await res.json();
+          const result = await res.json();
+
+          // 检查是否返回了错误
+          if (!Array.isArray(result)) {
+            throw new Error(result.error || '数据格式错误');
+          }
+          const data = result;
 
           const maxCount = data.length > 0 ? Math.max(...data.map(d => Number(d.count))) : 1;
 
           // 柱状图
-          const chartContainer = $('#statsChartContainer');
           if (data.length === 0) {
-            chartContainer.innerHTML = '<div style="color:#999;font-size:13px;padding:20px 0;">暂无统计数据</div>';
+            chartContainer.innerHTML = '<div style="color:#999;font-size:13px;padding:20px 0;text-align:center;">暂无统计数据</div>';
           } else {
-            const maxHeight = 180;
+            const maxHeight = 160;
             chartContainer.innerHTML = `
               <div class="stats-bar-chart">
                 ${data.map(d => {
-                  const height = Math.max(2, (d.count / maxCount * maxHeight).toFixed(0));
+                  const height = Math.max(4, Math.round(d.count / maxCount * maxHeight));
                   const periodLabel = period === 'daily'
                     ? d.period.slice(5)  // MM-DD
                     : d.period;           // full
@@ -800,7 +809,6 @@
           }
 
           // 表格
-          const tableContainer = $('#statsTableContainer');
           const periodLabel = period === 'daily' ? '日期' : period === 'weekly' ? '周' : '月份';
           tableContainer.innerHTML = `
             <table style="margin:0;">
@@ -822,6 +830,10 @@
           `;
         } catch (err) {
           console.error('加载统计数据失败:', err);
+          chartContainer.innerHTML = '<div style="color:#ea4335;font-size:13px;padding:20px 0;text-align:center;">加载失败: ' + esc(err.message) + '</div>';
+          tableContainer.innerHTML = '';
+        } finally {
+          statsLoading = false;
         }
       }
 
