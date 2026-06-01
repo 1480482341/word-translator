@@ -8,10 +8,39 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-// ── 翻译引擎（优先微软翻译，无 Key 时回退 MyMemory）─────────
+// ── 翻译引擎（腾讯 → 微软 → MyMemory 自动切换）─────────
+const tencent = require('tencentcloud-sdk-nodejs-tmt');
+const TmtClient = tencent.tmt.v20180321.Client;
+
+const TENCENT_ID = process.env.TENCENT_SECRET_ID || '';
+const TENCENT_KEY = process.env.TENCENT_SECRET_KEY || '';
 const MS_KEY = process.env.MS_TRANSLATOR_KEY || '';
 const MS_REGION = process.env.MS_TRANSLATOR_REGION || 'eastasia';
 
+// 腾讯翻译
+let tmtClient = null;
+function getTmtClient() {
+  if (tmtClient) return tmtClient;
+  tmtClient = new TmtClient({
+    credential: { secretId: TENCENT_ID, secretKey: TENCENT_KEY },
+    region: 'ap-guangzhou',
+    profile: { httpProfile: { endpoint: 'tmt.tencentcloudapi.com' } },
+  });
+  return tmtClient;
+}
+
+async function translateWithTencent(text) {
+  const client = getTmtClient();
+  const resp = await client.TextTranslate({
+    SourceText: text,
+    Source: 'en',
+    Target: 'zh',
+    ProjectId: 0,
+  });
+  return resp.TargetText || '';
+}
+
+// 微软翻译
 async function translateWithMicrosoft(text) {
   const url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=zh-Hans';
   const res = await fetch(url, {
@@ -28,6 +57,7 @@ async function translateWithMicrosoft(text) {
   return data[0]?.translations?.[0]?.text || '';
 }
 
+// MyMemory（兜底）
 async function translateWithMyMemory(text) {
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN`;
   const res = await fetch(url);
@@ -37,14 +67,20 @@ async function translateWithMyMemory(text) {
   return data.responseData.translatedText;
 }
 
+// 自动选择：腾讯 → 微软 → MyMemory
 async function translateText(text) {
-  // 有微软 Key 就用微软翻译，失败时自动回退 MyMemory
+  if (TENCENT_ID && TENCENT_KEY) {
+    try {
+      return await translateWithTencent(text);
+    } catch (err) {
+      console.warn('[翻译] 腾讯翻译失败，尝试下一个:', err.message);
+    }
+  }
   if (MS_KEY) {
     try {
       return await translateWithMicrosoft(text);
     } catch (err) {
       console.warn('[翻译] 微软翻译失败，回退 MyMemory:', err.message);
-      return await translateWithMyMemory(text);
     }
   }
   return await translateWithMyMemory(text);
