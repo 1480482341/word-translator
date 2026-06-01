@@ -290,7 +290,7 @@ async function getAnalytics() {
 async function getDailyStats() {
   const p = getPool();
   const [rows] = await p.execute(`
-    SELECT DATE(created_at) AS period, COUNT(*) AS count
+    SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS period, COUNT(*) AS count
     FROM translation_logs
     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     GROUP BY DATE(created_at)
