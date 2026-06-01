@@ -1,6 +1,6 @@
 /**
  * Word Translator - Express Server
- * 提供翻译 API + 单词管理 API + 管理后台页面
+ * 提供翻译 API + 单词管理 API + 引擎配置 + 数据分析 + 管理后台页面
  */
 
 require('dotenv').config();
@@ -67,24 +67,83 @@ async function translateWithMyMemory(text) {
   return data.responseData.translatedText;
 }
 
-// 自动选择：腾讯 → 微软 → MyMemory
-async function translateText(text) {
-  if (TENCENT_ID && TENCENT_KEY) {
-    try {
-      return await translateWithTencent(text);
-    } catch (err) {
-      console.warn('[翻译] 腾讯翻译失败，尝试下一个:', err.message);
-    }
-  }
-  if (MS_KEY) {
-    try {
-      return await translateWithMicrosoft(text);
-    } catch (err) {
-      console.warn('[翻译] 微软翻译失败，回退 MyMemory:', err.message);
-    }
-  }
-  return await translateWithMyMemory(text);
+/**
+ * 获取用户配置的首选引擎（默认按自动顺序）
+ */
+async function getPreferredEngine() {
+  const setting = await db.getSetting('preferred_engine');
+  if (setting) return setting;
+  // 自动检测可用引擎
+  if (TENCENT_ID && TENCENT_KEY) return 'tencent';
+  if (MS_KEY) return 'microsoft';
+  return 'mymemory';
 }
+
+/**
+ * 获取可用引擎列表
+ */
+function getAvailableEngines() {
+  const engines = [
+    {
+      key: 'tencent',
+      name: '腾讯翻译',
+      configured: !!(TENCENT_ID && TENCENT_KEY),
+      description: '免费 500万字符/月',
+    },
+    {
+      key: 'microsoft',
+      name: '微软翻译',
+      configured: !!MS_KEY,
+      description: '免费 200万字符/月',
+    },
+    {
+      key: 'mymemory',
+      name: 'MyMemory',
+      configured: true, // 无需配置，总是可用
+      description: '免费，无需 API Key',
+    },
+  ];
+  return engines;
+}
+
+/**
+ * 根据用户偏好和可用性执行翻译
+ * 返回 { translation, engine }
+ */
+async function translateText(text) {
+  const preferred = await getPreferredEngine();
+
+  // 如果用户指定了首选引擎，优先尝试
+  const tryOrder = [];
+  if (preferred === 'tencent') tryOrder.push('tencent', 'microsoft', 'mymemory');
+  else if (preferred === 'microsoft') tryOrder.push('microsoft', 'tencent', 'mymemory');
+  else tryOrder.push('mymemory', 'tencent', 'microsoft');
+
+  // 去重
+  const uniqueOrder = [...new Set(tryOrder)];
+
+  for (const engine of uniqueOrder) {
+    try {
+      let translation;
+      if (engine === 'tencent') {
+        if (!TENCENT_ID || !TENCENT_KEY) continue;
+        translation = await translateWithTencent(text);
+      } else if (engine === 'microsoft') {
+        if (!MS_KEY) continue;
+        translation = await translateWithMicrosoft(text);
+      } else {
+        translation = await translateWithMyMemory(text);
+      }
+      return { translation, engine };
+    } catch (err) {
+      console.warn(`[翻译] ${engine} 翻译失败，尝试下一个:`, err.message);
+    }
+  }
+
+  // 所有引擎都失败了
+  throw new Error('所有翻译引擎均不可用');
+}
+
 const db = require('./db');
 
 const app = express();
@@ -94,13 +153,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());                     // 允许扩展跨域请求
 app.use(express.json());            // 解析 JSON body
 
-// ── 路由 ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  翻译 API
+// ═══════════════════════════════════════════════════════
 
 /**
  * POST /api/translate
  * 翻译英文文本为中文
  * Body: { text: string }
- * Response: { original, translation, word, id, frequency }
+ * Response: { original, translation, word, id, frequency, engine }
  */
 app.post('/api/translate', async (req, res) => {
   try {
@@ -113,15 +174,18 @@ app.post('/api/translate', async (req, res) => {
     const word = text.trim().toLowerCase().replace(/\s+/g, ' ');
 
     // 调用翻译 API（英文 → 简体中文）
-    const translation = await translateText(word);
+    const { translation, engine } = await translateText(word);
 
     // 保存到数据库
     await db.upsertWord(word, translation);
 
+    // 记录翻译日志（引擎使用情况）
+    await db.logTranslation(word, engine);
+
     // 查询最新数据以获取 frequency
     const record = await db.findWord(word);
 
-    console.log(`[翻译] "${word}" → "${translation}" (查询 ${record.frequency} 次)`);
+    console.log(`[翻译] "${word}" → "${translation}" (${engine}, 查询 ${record.frequency} 次)`);
 
     res.json({
       original: text.trim(),
@@ -129,6 +193,7 @@ app.post('/api/translate', async (req, res) => {
       word,
       id: record.id,
       frequency: record.frequency,
+      engine,
     });
   } catch (err) {
     console.error('[翻译失败]', err.message);
@@ -141,6 +206,10 @@ app.post('/api/translate', async (req, res) => {
     res.status(500).json({ error: '翻译服务暂时不可用，请稍后重试' });
   }
 });
+
+// ═══════════════════════════════════════════════════════
+//  单词管理 API
+// ═══════════════════════════════════════════════════════
 
 /**
  * GET /api/words
@@ -234,6 +303,144 @@ app.get('/api/stats', async (req, res) => {
   } catch (err) {
     console.error('[统计失败]', err.message);
     res.status(500).json({ error: '获取统计数据失败' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+//  翻译引擎配置 API
+// ═══════════════════════════════════════════════════════
+
+/**
+ * GET /api/engine
+ * 返回当前激活的引擎和可用引擎列表
+ */
+app.get('/api/engine', async (req, res) => {
+  try {
+    const activeEngine = await getPreferredEngine();
+    const availableEngines = getAvailableEngines();
+
+    res.json({
+      active: activeEngine,
+      engines: availableEngines,
+    });
+  } catch (err) {
+    console.error('[引擎查询失败]', err.message);
+    res.status(500).json({ error: '获取引擎配置失败' });
+  }
+});
+
+/**
+ * PUT /api/engine
+ * 设置首选翻译引擎
+ * Body: { engine: "tencent" | "microsoft" | "mymemory" }
+ */
+app.put('/api/engine', async (req, res) => {
+  try {
+    const { engine } = req.body;
+
+    if (!engine || !['tencent', 'microsoft', 'mymemory'].includes(engine)) {
+      return res.status(400).json({ error: '无效的引擎类型，可选值: tencent, microsoft, mymemory' });
+    }
+
+    // 检查目标引擎是否可用
+    const engines = getAvailableEngines();
+    const target = engines.find((e) => e.key === engine);
+    if (!target) {
+      return res.status(400).json({ error: '未知引擎' });
+    }
+    if (!target.configured) {
+      return res.status(400).json({
+        error: `引擎 "${target.name}" 未配置 API Key，请先在 .env 文件中配置相关密钥`,
+      });
+    }
+
+    await db.setSetting('preferred_engine', engine);
+    console.log(`[引擎] 已切换为: ${target.name}`);
+
+    res.json({
+      success: true,
+      active: engine,
+      message: `翻译引擎已切换为 ${target.name}`,
+    });
+  } catch (err) {
+    console.error('[引擎设置失败]', err.message);
+    res.status(500).json({ error: '设置引擎失败' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+//  数据分析 API
+// ═══════════════════════════════════════════════════════
+
+/**
+ * GET /api/analytics
+ * 返回综合数据分析
+ */
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const analytics = await db.getAnalytics();
+
+    // 补充今日翻译次数
+    const p = db.getPool();
+    const [[{ todayCount }]] = await p.execute(
+      'SELECT COUNT(*) AS todayCount FROM translation_logs WHERE DATE(created_at) = CURDATE()'
+    );
+    // 本周翻译次数
+    const [[{ weekCount }]] = await p.execute(`
+      SELECT COUNT(*) AS weekCount FROM translation_logs
+      WHERE YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+    `);
+
+    res.json({
+      ...analytics,
+      todayTranslations: todayCount,
+      weekTranslations: weekCount,
+    });
+  } catch (err) {
+    console.error('[分析失败]', err.message);
+    res.status(500).json({ error: '获取数据分析失败' });
+  }
+});
+
+/**
+ * GET /api/stats/daily
+ * 最近 30 天每日翻译统计
+ */
+app.get('/api/stats/daily', async (req, res) => {
+  try {
+    const rows = await db.getDailyStats();
+    res.json(rows);
+  } catch (err) {
+    console.error('[每日统计失败]', err.message);
+    res.status(500).json({ error: '获取每日统计失败' });
+  }
+});
+
+/**
+ * GET /api/stats/weekly
+ * 最近 12 周每周翻译统计
+ */
+app.get('/api/stats/weekly', async (req, res) => {
+  try {
+    const rows = await db.getWeeklyStats();
+    res.json(rows);
+  } catch (err) {
+    console.error('[每周统计失败]', err.message);
+    res.status(500).json({ error: '获取每周统计失败' });
+  }
+});
+
+/**
+ * GET /api/stats/monthly
+ * 最近 12 个月每月翻译统计
+ */
+app.get('/api/stats/monthly', async (req, res) => {
+  try {
+    const rows = await db.getMonthlyStats();
+    res.json(rows);
+  } catch (err) {
+    console.error('[每月统计失败]', err.message);
+    res.status(500).json({ error: '获取每月统计失败' });
   }
 });
 

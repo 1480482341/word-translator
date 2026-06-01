@@ -33,54 +33,295 @@
       border-radius: 20px;
     }
 
-    /* ── Toolbar ─────────────────────────────────── */
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 16px 32px;
-      background: #fff;
-      border-bottom: 1px solid #e8e8e8;
-      flex-wrap: wrap;
-    }
-    .search-box {
-      flex: 1;
-      min-width: 200px;
-      max-width: 400px;
-      padding: 8px 14px;
-      border: 1px solid #d9d9d9;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-box:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.12); }
-    .btn {
-      padding: 8px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.15s, transform 0.1s;
-      white-space: nowrap;
-    }
-    .btn:active { transform: scale(0.96); }
-    .btn-primary { background: #1a73e8; color: #fff; }
-    .btn-primary:hover { background: #1557b0; }
-    .btn-danger { background: #fff; color: #ea4335; border: 1px solid #ea4335; }
-    .btn-danger:hover { background: #fce8e6; }
-    .btn-export { background: #34a853; color: #fff; }
-    .btn-export:hover { background: #2d9249; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── Table ───────────────────────────────────── */
-    .table-container {
+    /* ── Section ─────────────────────────────────── */
+    .section {
       margin: 20px 32px;
       background: #fff;
       border-radius: 12px;
-      overflow: hidden;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-body { padding: 20px 24px; }
+
+    /* ── Engine Section ──────────────────────────── */
+    .engine-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .engine-label { font-size: 14px; color: #666; font-weight: 500; }
+    .engine-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .engine-badge.tencent { background: #e8f5e9; color: #2e7d32; }
+    .engine-badge.microsoft { background: #e3f2fd; color: #1565c0; }
+    .engine-badge.mymemory { background: #fff3e0; color: #e65100; }
+    .engine-status {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .engine-status.ready { background: #e8f5e9; color: #2e7d32; }
+    .engine-status.unconfigured { background: #fce8e6; color: #c5221f; }
+    .engine-switcher {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .engine-btn {
+      padding: 8px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+      color: #555;
+    }
+    .engine-btn:hover { border-color: #1a73e8; color: #1a73e8; }
+    .engine-btn.active {
+      border-color: #1a73e8;
+      background: #e8f0fe;
+      color: #1a73e8;
+      font-weight: 600;
+    }
+    .engine-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .engine-btn:disabled:hover { border-color: #e0e0e0; color: #555; }
+    .engine-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    /* ── Analytics Cards ──────────────────────────── */
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 18px 20px;
+      border: 1px solid #eee;
+    }
+    .card-title {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a73e8;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    /* ── Charts (pure CSS) ────────────────────────── */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+    .chart-box { min-width: 0; }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 12px;
+    }
+    .bar-chart { display: flex; flex-direction: column; gap: 6px; }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bar-label {
+      width: 90px;
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .bar-track {
+      flex: 1;
+      height: 20px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a73e8, #4a9af5);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      min-width: 2px;
+    }
+    .bar-fill.alt { background: linear-gradient(90deg, #34a853, #66bb6a); }
+    .bar-fill.orange { background: linear-gradient(90deg, #fb8c00, #ffa726); }
+    .bar-val {
+      width: 40px;
+      font-size: 11px;
+      color: #888;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .bar-second {
+      font-size: 11px;
+      color: #aaa;
+      margin-left: 4px;
+    }
+
+    /* Engine usage inline bars */
+    .engine-usage-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .engine-usage-label {
+      width: 80px;
+      font-size: 13px;
+      color: #555;
+    }
+    .engine-usage-track {
+      flex: 1;
+      height: 24px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .engine-usage-fill {
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 600;
+      transition: width 0.4s ease;
+      min-width: 2px;
+    }
+    .engine-usage-fill.tencent { background: linear-gradient(90deg, #2e7d32, #43a047); }
+    .engine-usage-fill.microsoft { background: linear-gradient(90deg, #1565c0, #1e88e5); }
+    .engine-usage-fill.mymemory { background: linear-gradient(90deg, #e65100, #fb8c00); }
+    .engine-usage-count {
+      width: 50px;
+      font-size: 12px;
+      color: #888;
+      text-align: right;
+    }
+
+    /* ── Stats Tabs ────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e8e8e8;
+    }
+    .tab-btn {
+      padding: 8px 20px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+      color: #888;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab-btn:hover { color: #1a73e8; }
+    .tab-btn.active {
+      color: #1a73e8;
+      border-bottom-color: #1a73e8;
+    }
+
+    /* Stats bar chart */
+    .stats-bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 200px;
+      padding: 0 4px;
+      min-width: 0;
+    }
+    .stats-bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 20px;
+    }
+    .stats-bar-fill {
+      width: 100%;
+      max-width: 40px;
+      background: linear-gradient(180deg, #4a9af5, #1a73e8);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.4s ease;
+      min-height: 2px;
+    }
+    .stats-bar-count {
+      font-size: 10px;
+      color: #1a73e8;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .stats-bar-period {
+      font-size: 10px;
+      color: #999;
+      margin-top: 6px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(-45deg);
+      transform-origin: top left;
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      .stats-bar-chart { height: 140px; }
+    }
+
+    /* ── Table (existing) ─────────────────────────── */
+    .table-container {
+      margin: 0;
+      background: #fff;
+      overflow: hidden;
     }
     table {
       width: 100%;
@@ -124,13 +365,54 @@
     }
     .btn-delete:hover { background: #fce8e6; }
 
-    /* ── Pagination ──────────────────────────────── */
+    /* ── Toolbar (existing) ────────────────────────── */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 24px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      max-width: 400px;
+      padding: 8px 14px;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.12); }
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-danger { background: #fff; color: #ea4335; border: 1px solid #ea4335; }
+    .btn-danger:hover { background: #fce8e6; }
+    .btn-export { background: #34a853; color: #fff; }
+    .btn-export:hover { background: #2d9249; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Pagination (existing) ─────────────────────── */
     .pagination {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
-      padding: 16px 32px 24px;
+      padding: 16px 24px 24px;
       font-size: 14px;
     }
     .pagination .btn {
@@ -139,7 +421,7 @@
     }
     .page-info { color: #666; font-size: 13px; }
 
-    /* ── Empty State ─────────────────────────────── */
+    /* ── Empty State (existing) ────────────────────── */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -148,7 +430,7 @@
     .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
     .empty-state p { font-size: 14px; }
 
-    /* ── Toast ───────────────────────────────────── */
+    /* ── Toast (existing) ──────────────────────────── */
     .toast {
       position: fixed;
       bottom: 32px;
@@ -167,13 +449,16 @@
     .toast.show { opacity: 1; }
     .toast.error { background: #ea4335; }
 
-    /* ── Responsive ──────────────────────────────── */
+    /* ── Responsive (existing) ──────────────────────── */
     @media (max-width: 600px) {
       .header { flex-direction: column; gap: 8px; padding: 16px; }
       .toolbar { padding: 12px 16px; }
-      .table-container { margin: 12px 16px; }
+      .section { margin: 12px 16px; }
+      .table-container { margin: 0; }
       table { font-size: 13px; }
       th, td { padding: 8px 10px; }
+      .engine-row { flex-direction: column; align-items: flex-start; }
+      .cards-row { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -183,43 +468,91 @@
     <span class="header-stats" id="headerStats">加载中…</span>
   </div>
 
-  <div class="toolbar">
-    <input
-      type="text"
-      class="search-box"
-      id="searchInput"
-      placeholder="搜索单词或翻译…"
-      autofocus
-    >
-    <button class="btn btn-primary" id="btnSearch">🔍 搜索</button>
-    <button class="btn btn-export" id="btnExport">📥 导出 CSV</button>
-    <button class="btn btn-danger" id="btnClearSearch">✕ 清除</button>
-  </div>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>英文单词</th>
-          <th>中文翻译</th>
-          <th>查询次数</th>
-          <th>更新时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-    <div class="empty-state" id="emptyState" style="display:none;">
-      <div class="icon">📭</div>
-      <p>暂无数据 — 在网页中选中英文单词即可开始翻译</p>
+  <!-- ── 翻译引擎配置 ────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">⚙️ 翻译引擎</div>
+    <div class="section-body">
+      <div class="engine-row">
+        <span class="engine-label">当前引擎：</span>
+        <span id="engineBadge" class="engine-badge">加载中…</span>
+        <span id="engineStatus"></span>
+      </div>
+      <div class="engine-switcher" id="engineSwitcher"></div>
+      <div class="engine-hint" id="engineHint"></div>
     </div>
   </div>
 
-  <div class="pagination" id="pagination">
-    <button class="btn btn-primary" id="btnPrev">← 上一页</button>
-    <span class="page-info" id="pageInfo"></span>
-    <button class="btn btn-primary" id="btnNext">下一页 →</button>
+  <!-- ── 数据分析 ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">📊 数据分析</div>
+    <div class="section-body">
+      <div class="cards-row" id="analyticsCards"></div>
+      <div class="chart-grid">
+        <div class="chart-box">
+          <div class="chart-title">🏆 Top 10 高频单词</div>
+          <div class="bar-chart" id="topWordsChart"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">🔧 引擎使用分布</div>
+          <div id="engineUsageChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 翻译统计 ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">📈 翻译统计</div>
+    <div class="section-body">
+      <div class="tabs">
+        <button class="tab-btn active" data-period="daily">每日</button>
+        <button class="tab-btn" data-period="weekly">每周</button>
+        <button class="tab-btn" data-period="monthly">每月</button>
+      </div>
+      <div id="statsChartContainer"></div>
+      <div id="statsTableContainer" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ── 单词列表 ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">📋 单词列表</div>
+    <div class="toolbar">
+      <input
+        type="text"
+        class="search-box"
+        id="searchInput"
+        placeholder="搜索单词或翻译…"
+        autofocus
+      >
+      <button class="btn btn-primary" id="btnSearch">🔍 搜索</button>
+      <button class="btn btn-export" id="btnExport">📥 导出 CSV</button>
+      <button class="btn btn-danger" id="btnClearSearch">✕ 清除</button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>英文单词</th>
+            <th>中文翻译</th>
+            <th>查询次数</th>
+            <th>更新时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">📭</div>
+        <p>暂无数据 — 在网页中选中英文单词即可开始翻译</p>
+      </div>
+    </div>
+    <div class="pagination" id="pagination">
+      <button class="btn btn-primary" id="btnPrev">← 上一页</button>
+      <span class="page-info" id="pageInfo"></span>
+      <button class="btn btn-primary" id="btnNext">下一页 →</button>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -231,6 +564,7 @@
       // ── 状态 ─────────────────────────────────────
       let currentPage = 1;
       let currentSearch = '';
+      let currentStatPeriod = 'daily';
       const limit = 20;
 
       // ── DOM 引用 ─────────────────────────────────
@@ -253,7 +587,248 @@
         toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2500);
       }
 
-      // ── 加载数据 ─────────────────────────────────
+      // ── 工具函数 ─────────────────────────────────
+      function esc(str) {
+        const el = document.createElement('span');
+        el.textContent = str;
+        return el.innerHTML;
+      }
+
+      function formatDate(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      // ══════════════════════════════════════════════
+      //  翻译引擎配置
+      // ══════════════════════════════════════════════
+
+      async function loadEngine() {
+        try {
+          const res = await fetch('/api/engine');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+
+          const { active, engines } = data;
+          const activeEngine = engines.find(e => e.key === active) || { name: active, key: active };
+
+          // 徽章
+          const badge = $('#engineBadge');
+          badge.textContent = activeEngine.name || active;
+          badge.className = 'engine-badge ' + active;
+
+          // 状态
+          const status = $('#engineStatus');
+          if (activeEngine.configured !== false) {
+            status.textContent = '● 已配置';
+            status.className = 'engine-status ready';
+          } else {
+            status.textContent = '● 未配置';
+            status.className = 'engine-status unconfigured';
+          }
+
+          // 切换按钮
+          const switcher = $('#engineSwitcher');
+          switcher.innerHTML = engines.map(e => {
+            const isActive = e.key === active;
+            const disabled = !e.configured ? ' disabled' : '';
+            const cls = 'engine-btn' + (isActive ? ' active' : '');
+            const desc = e.description ? ` (${e.description})` : '';
+            return `<button class="${cls}" data-engine="${e.key}"${disabled}>
+              ${e.name}${desc}
+            </button>`;
+          }).join('');
+
+          // 绑定点击事件
+          switcher.querySelectorAll('.engine-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', () => switchEngine(btn.dataset.engine));
+          });
+
+          // 提示
+          const hint = $('#engineHint');
+          const unconfiguredEngines = engines.filter(e => !e.configured);
+          if (unconfiguredEngines.length > 0) {
+            hint.textContent = '💡 ' + unconfiguredEngines.map(e => e.name).join('、') + ' 未配置 API Key，请在 .env 文件中添加密钥后重启服务';
+          } else {
+            hint.textContent = '';
+          }
+        } catch (err) {
+          console.error('加载引擎配置失败:', err);
+          $('#engineBadge').textContent = '加载失败';
+        }
+      }
+
+      async function switchEngine(engine) {
+        try {
+          const res = await fetch('/api/engine', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ engine }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+
+          showToast('✓ ' + data.message);
+          loadEngine();
+        } catch (err) {
+          console.error('切换引擎失败:', err);
+          showToast('切换引擎失败: ' + err.message, true);
+        }
+      }
+
+      // ══════════════════════════════════════════════
+      //  数据分析
+      // ══════════════════════════════════════════════
+
+      async function loadAnalytics() {
+        try {
+          const res = await fetch('/api/analytics');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+
+          // 统计卡片
+          const cards = $('#analyticsCards');
+          cards.innerHTML = `
+            <div class="card">
+              <div class="card-title">📝 总单词数</div>
+              <div class="card-value">${data.totalWords}</div>
+              <div class="card-sub">不重复的英文单词</div>
+            </div>
+            <div class="card">
+              <div class="card-title">🔄 总翻译次数</div>
+              <div class="card-value">${data.totalTranslations}</div>
+              <div class="card-sub">所有单词查询次数总和</div>
+            </div>
+            <div class="card">
+              <div class="card-title">📅 今日翻译</div>
+              <div class="card-value">${data.todayTranslations || 0}</div>
+              <div class="card-sub">今日翻译请求次数</div>
+            </div>
+            <div class="card">
+              <div class="card-title">📆 本周翻译</div>
+              <div class="card-value">${data.weekTranslations || 0}</div>
+              <div class="card-sub">本周翻译请求次数</div>
+            </div>
+          `;
+
+          // Top 10 柱状图
+          const topWords = data.topWords || [];
+          const maxFreq = topWords.length > 0 ? Math.max(...topWords.map(w => w.frequency)) : 1;
+          const topChart = $('#topWordsChart');
+          if (topWords.length === 0) {
+            topChart.innerHTML = '<div style="color:#999;font-size:13px;">暂无数据</div>';
+          } else {
+            topChart.innerHTML = topWords.map(w => `
+              <div class="bar-row">
+                <span class="bar-label" title="${esc(w.word)}">${esc(w.word)}</span>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:${(w.frequency / maxFreq * 100).toFixed(1)}%"></div>
+                </div>
+                <span class="bar-val">${w.frequency}</span>
+                <span class="bar-second">${esc(w.translation)}</span>
+              </div>
+            `).join('');
+          }
+
+          // 引擎使用分布
+          const engineUsage = data.engineUsage || [];
+          const totalEngine = engineUsage.reduce((s, e) => s + Number(e.count), 0) || 1;
+          const engineChart = $('#engineUsageChart');
+          if (engineUsage.length === 0) {
+            engineChart.innerHTML = '<div style="color:#999;font-size:13px;">暂无数据</div>';
+          } else {
+            const engineNames = {
+              tencent: '腾讯翻译',
+              microsoft: '微软翻译',
+              mymemory: 'MyMemory',
+            };
+            engineChart.innerHTML = engineUsage.map(e => `
+              <div class="engine-usage-bar">
+                <span class="engine-usage-label">${engineNames[e.engine] || e.engine}</span>
+                <div class="engine-usage-track">
+                  <div class="engine-usage-fill ${e.engine}" style="width:${(e.count / totalEngine * 100).toFixed(1)}%">
+                    ${(e.count / totalEngine * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <span class="engine-usage-count">${e.count} 次</span>
+              </div>
+            `).join('');
+          }
+        } catch (err) {
+          console.error('加载数据分析失败:', err);
+        }
+      }
+
+      // ══════════════════════════════════════════════
+      //  翻译统计（每日/每周/每月）
+      // ══════════════════════════════════════════════
+
+      async function loadStats(period) {
+        currentStatPeriod = period;
+        try {
+          const res = await fetch(`/api/stats/${period}`);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+
+          const maxCount = data.length > 0 ? Math.max(...data.map(d => Number(d.count))) : 1;
+
+          // 柱状图
+          const chartContainer = $('#statsChartContainer');
+          if (data.length === 0) {
+            chartContainer.innerHTML = '<div style="color:#999;font-size:13px;padding:20px 0;">暂无统计数据</div>';
+          } else {
+            const maxHeight = 180;
+            chartContainer.innerHTML = `
+              <div class="stats-bar-chart">
+                ${data.map(d => {
+                  const height = Math.max(2, (d.count / maxCount * maxHeight).toFixed(0));
+                  const periodLabel = period === 'daily'
+                    ? d.period.slice(5)  // MM-DD
+                    : d.period;           // full
+                  return `
+                  <div class="stats-bar-col" title="${d.period}: ${d.count} 次">
+                    <span class="stats-bar-count">${d.count}</span>
+                    <div class="stats-bar-fill" style="height:${height}px"></div>
+                    <span class="stats-bar-period">${periodLabel}</span>
+                  </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          }
+
+          // 表格
+          const tableContainer = $('#statsTableContainer');
+          const periodLabel = period === 'daily' ? '日期' : period === 'weekly' ? '周' : '月份';
+          tableContainer.innerHTML = `
+            <table style="margin:0;">
+              <thead>
+                <tr><th>${periodLabel}</th><th>翻译次数</th></tr>
+              </thead>
+              <tbody>
+                ${data.length === 0
+                  ? '<tr><td colspan="2" style="text-align:center;color:#999;">暂无数据</td></tr>'
+                  : data.map(d => `
+                    <tr>
+                      <td>${d.period}</td>
+                      <td><span class="freq-badge">${d.count}</span></td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          `;
+        } catch (err) {
+          console.error('加载统计数据失败:', err);
+        }
+      }
+
+      // ══════════════════════════════════════════════
+      //  单词列表（现有功能）
+      // ══════════════════════════════════════════════
+
       async function loadWords(page = 1, search = '') {
         try {
           let url = `/api/words?page=${page}&limit=${limit}`;
@@ -276,7 +851,6 @@
         }
       }
 
-      // ── 渲染表格 ─────────────────────────────────
       function renderTable(rows) {
         if (!rows || rows.length === 0) {
           tableBody.innerHTML = '';
@@ -300,7 +874,6 @@
           .join('');
       }
 
-      // ── 渲染分页 ─────────────────────────────────
       function renderPagination(p) {
         if (!p || p.totalPages <= 1) {
           pageInfo.textContent = `共 ${p ? p.total : 0} 条`;
@@ -313,23 +886,8 @@
         btnNext.disabled = p.page >= p.totalPages;
       }
 
-      // ── 更新统计 ─────────────────────────────────
       function updateStats(total) {
         headerStats.textContent = `📊 共 ${total} 个单词`;
-      }
-
-      // ── 工具函数 ─────────────────────────────────
-      function esc(str) {
-        const el = document.createElement('span');
-        el.textContent = str;
-        return el.innerHTML;
-      }
-
-      function formatDate(date) {
-        if (!date) return '';
-        const d = new Date(date);
-        const pad = (n) => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
       }
 
       // ── 删除单词 ─────────────────────────────────
@@ -342,21 +900,25 @@
           if (!res.ok) throw new Error(data.error);
 
           showToast('✓ 已删除');
-          // 返回当前页（如果删完后当前页为空，自动回退一页）
           loadWords(currentPage, currentSearch);
+          loadAnalytics(); // 刷新分析数据
         } catch (err) {
           console.error('删除失败:', err);
           showToast('删除失败: ' + err.message, true);
         }
       };
 
-      // ── 导出 CSV ─────────────────────────────────
+      // ══════════════════════════════════════════════
+      //  事件绑定
+      // ══════════════════════════════════════════════
+
+      // 导出 CSV
       $('#btnExport').addEventListener('click', () => {
         window.open('/api/export', '_blank');
         showToast('✓ CSV 下载中…');
       });
 
-      // ── 搜索 ─────────────────────────────────────
+      // 搜索
       $('#btnSearch').addEventListener('click', () => {
         loadWords(1, searchInput.value);
       });
@@ -372,7 +934,7 @@
         loadWords(1, '');
       });
 
-      // ── 翻页 ─────────────────────────────────────
+      // 翻页
       btnPrev.addEventListener('click', () => {
         if (currentPage > 1) loadWords(currentPage - 1, currentSearch);
       });
@@ -381,7 +943,21 @@
         loadWords(currentPage + 1, currentSearch);
       });
 
-      // ── 初始化 ───────────────────────────────────
+      // 统计 Tab 切换
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadStats(btn.dataset.period);
+        });
+      });
+
+      // ══════════════════════════════════════════════
+      //  初始化
+      // ══════════════════════════════════════════════
+      loadEngine();
+      loadAnalytics();
+      loadStats('daily');
       loadWords(1, '');
     })();
   </script>

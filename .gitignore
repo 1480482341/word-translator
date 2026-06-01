@@ -1,3 +1,5 @@
 node_modules/
 .env
 *.log
+server/check_env.js
+server/test_tencent.js
