@@ -293,7 +293,7 @@ async function getDailyStats() {
     SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS period, COUNT(*) AS count
     FROM translation_logs
     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-    GROUP BY DATE(created_at)
+    GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
     ORDER BY period ASC
   `);
   return rows;
