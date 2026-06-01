@@ -8,7 +8,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { translate: googleTranslate } = require('@vitalets/google-translate-api');
+// 使用 MyMemory 免费翻译 API（国内可访问，无需 Key）
+async function translateText(text) {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`翻译 API 返回 ${res.status}`);
+  const data = await res.json();
+  if (data.responseStatus !== 200) throw new Error(data.responseDetails || '翻译失败');
+  return data.responseData.translatedText;
+}
 const db = require('./db');
 
 const app = express();
@@ -36,9 +44,8 @@ app.post('/api/translate', async (req, res) => {
 
     const word = text.trim().toLowerCase().replace(/\s+/g, ' ');
 
-    // 调用 Google 翻译 API（英文 → 简体中文）
-    const translateResult = await googleTranslate(word, { from: 'en', to: 'zh-CN' });
-    const translation = translateResult.text;
+    // 调用翻译 API（英文 → 简体中文）
+    const translation = await translateText(word);
 
     // 保存到数据库
     await db.upsertWord(word, translation);
@@ -59,7 +66,7 @@ app.post('/api/translate', async (req, res) => {
     console.error('[翻译失败]', err.message);
 
     // 区分网络错误和翻译错误
-    if (err.name === 'TooManyRequestsError') {
+    if (err.message && err.message.includes('429')) {
       return res.status(429).json({ error: '翻译请求过于频繁，请稍后再试' });
     }
 
