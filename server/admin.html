@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Translator - 管理后台</title>
+  <style>
+    /* ── Reset & Base ────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ──────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #1a73e8, #1557b0);
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header-stats {
+      font-size: 14px;
+      background: rgba(255,255,255,0.18);
+      padding: 6px 16px;
+      border-radius: 20px;
+    }
+
+    /* ── Toolbar ─────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 32px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      max-width: 400px;
+      padding: 8px 14px;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.12); }
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-danger { background: #fff; color: #ea4335; border: 1px solid #ea4335; }
+    .btn-danger:hover { background: #fce8e6; }
+    .btn-export { background: #34a853; color: #fff; }
+    .btn-export:hover { background: #2d9249; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Table ───────────────────────────────────── */
+    .table-container {
+      margin: 20px 32px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 600;
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    tr:hover td { background: #f8f9ff; }
+    .word-cell { color: #1a73e8; font-weight: 500; font-size: 15px; }
+    .translation-cell { font-size: 15px; }
+    .freq-badge {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .date-cell { font-size: 12px; color: #999; }
+    .btn-delete {
+      padding: 4px 12px;
+      background: transparent;
+      color: #ea4335;
+      border: 1px solid #ea4335;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-delete:hover { background: #fce8e6; }
+
+    /* ── Pagination ──────────────────────────────── */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px 24px;
+      font-size: 14px;
+    }
+    .pagination .btn {
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+    .page-info { color: #666; font-size: 13px; }
+
+    /* ── Empty State ─────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Toast ───────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.error { background: #ea4335; }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 600px) {
+      .header { flex-direction: column; gap: 8px; padding: 16px; }
+      .toolbar { padding: 12px 16px; }
+      .table-container { margin: 12px 16px; }
+      table { font-size: 13px; }
+      th, td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔤 Word Translator · 管理后台</h1>
+    <span class="header-stats" id="headerStats">加载中…</span>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="text"
+      class="search-box"
+      id="searchInput"
+      placeholder="搜索单词或翻译…"
+      autofocus
+    >
+    <button class="btn btn-primary" id="btnSearch">🔍 搜索</button>
+    <button class="btn btn-export" id="btnExport">📥 导出 CSV</button>
+    <button class="btn btn-danger" id="btnClearSearch">✕ 清除</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>英文单词</th>
+          <th>中文翻译</th>
+          <th>查询次数</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="icon">📭</div>
+      <p>暂无数据 — 在网页中选中英文单词即可开始翻译</p>
+    </div>
+  </div>
+
+  <div class="pagination" id="pagination">
+    <button class="btn btn-primary" id="btnPrev">← 上一页</button>
+    <span class="page-info" id="pageInfo"></span>
+    <button class="btn btn-primary" id="btnNext">下一页 →</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── 状态 ─────────────────────────────────────
+      let currentPage = 1;
+      let currentSearch = '';
+      const limit = 20;
+
+      // ── DOM 引用 ─────────────────────────────────
+      const $ = (sel) => document.querySelector(sel);
+      const tableBody = $('#tableBody');
+      const emptyState = $('#emptyState');
+      const headerStats = $('#headerStats');
+      const pageInfo = $('#pageInfo');
+      const searchInput = $('#searchInput');
+      const btnPrev = $('#btnPrev');
+      const btnNext = $('#btnNext');
+      const toast = $('#toast');
+
+      // ── Toast ────────────────────────────────────
+      let toastTimer = null;
+      function showToast(msg, isError = false) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toast.textContent = msg;
+        toast.className = 'toast' + (isError ? ' error' : '') + ' show';
+        toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2500);
+      }
+
+      // ── 加载数据 ─────────────────────────────────
+      async function loadWords(page = 1, search = '') {
+        try {
+          let url = `/api/words?page=${page}&limit=${limit}`;
+          if (search.trim()) {
+            url += `&search=${encodeURIComponent(search.trim())}`;
+          }
+
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+
+          const result = await res.json();
+          renderTable(result.data);
+          renderPagination(result.pagination);
+          updateStats(result.pagination.total);
+          currentPage = page;
+          currentSearch = search;
+        } catch (err) {
+          console.error('加载数据失败:', err);
+          showToast('加载数据失败，请确认后端服务已启动', true);
+        }
+      }
+
+      // ── 渲染表格 ─────────────────────────────────
+      function renderTable(rows) {
+        if (!rows || rows.length === 0) {
+          tableBody.innerHTML = '';
+          emptyState.style.display = 'block';
+          return;
+        }
+        emptyState.style.display = 'none';
+
+        tableBody.innerHTML = rows
+          .map(
+            (r) => `
+          <tr data-id="${r.id}">
+            <td>${r.id}</td>
+            <td class="word-cell">${esc(r.word)}</td>
+            <td class="translation-cell">${esc(r.translation)}</td>
+            <td><span class="freq-badge">${r.frequency}</span></td>
+            <td class="date-cell">${formatDate(r.updated_at)}</td>
+            <td><button class="btn-delete" onclick="deleteWord(${r.id})">删除</button></td>
+          </tr>`
+          )
+          .join('');
+      }
+
+      // ── 渲染分页 ─────────────────────────────────
+      function renderPagination(p) {
+        if (!p || p.totalPages <= 1) {
+          pageInfo.textContent = `共 ${p ? p.total : 0} 条`;
+          btnPrev.disabled = true;
+          btnNext.disabled = true;
+          return;
+        }
+        pageInfo.textContent = `第 ${p.page} / ${p.totalPages} 页 · 共 ${p.total} 条`;
+        btnPrev.disabled = p.page <= 1;
+        btnNext.disabled = p.page >= p.totalPages;
+      }
+
+      // ── 更新统计 ─────────────────────────────────
+      function updateStats(total) {
+        headerStats.textContent = `📊 共 ${total} 个单词`;
+      }
+
+      // ── 工具函数 ─────────────────────────────────
+      function esc(str) {
+        const el = document.createElement('span');
+        el.textContent = str;
+        return el.innerHTML;
+      }
+
+      function formatDate(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      // ── 删除单词 ─────────────────────────────────
+      window.deleteWord = async function (id) {
+        if (!confirm(`确定要删除这条记录 (ID: ${id}) 吗？`)) return;
+
+        try {
+          const res = await fetch(`/api/words/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+
+          showToast('✓ 已删除');
+          // 返回当前页（如果删完后当前页为空，自动回退一页）
+          loadWords(currentPage, currentSearch);
+        } catch (err) {
+          console.error('删除失败:', err);
+          showToast('删除失败: ' + err.message, true);
+        }
+      };
+
+      // ── 导出 CSV ─────────────────────────────────
+      $('#btnExport').addEventListener('click', () => {
+        window.open('/api/export', '_blank');
+        showToast('✓ CSV 下载中…');
+      });
+
+      // ── 搜索 ─────────────────────────────────────
+      $('#btnSearch').addEventListener('click', () => {
+        loadWords(1, searchInput.value);
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          loadWords(1, searchInput.value);
+        }
+      });
+
+      $('#btnClearSearch').addEventListener('click', () => {
+        searchInput.value = '';
+        loadWords(1, '');
+      });
+
+      // ── 翻页 ─────────────────────────────────────
+      btnPrev.addEventListener('click', () => {
+        if (currentPage > 1) loadWords(currentPage - 1, currentSearch);
+      });
+
+      btnNext.addEventListener('click', () => {
+        loadWords(currentPage + 1, currentSearch);
+      });
+
+      // ── 初始化 ───────────────────────────────────
+      loadWords(1, '');
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+/**
+ * Word Translator - 浮动翻译面板样式
+ */
+
+/* ── 主面板 ─────────────────────────────────────────── */
+#wt-floating-panel {
+  position: fixed;
+  z-index: 2147483647; /* 最高层级，确保在其他元素之上 */
+  display: none;
+  width: 280px;
+  max-width: calc(100vw - 20px);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  overflow: hidden;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+
+/* ── 头部 ───────────────────────────────────────────── */
+.wt-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #1a73e8, #1557b0);
+  color: #fff;
+}
+
+.wt-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.wt-panel-close {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.wt-panel-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ── 内容区 ─────────────────────────────────────────── */
+.wt-panel-body {
+  padding: 12px 14px;
+}
+
+.wt-original,
+.wt-translation {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.wt-translation {
+  margin-bottom: 0;
+}
+
+.wt-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-top: 2px;
+}
+
+.wt-original-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a73e8;
+  word-break: break-word;
+}
+
+.wt-translation-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+}
+
+/* ── 底部状态栏 ─────────────────────────────────────── */
+.wt-panel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px 10px;
+  font-size: 11px;
+}
+
+.wt-frequency {
+  color: #aaa;
+}
+
+.wt-status {
+  color: #34a853;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.wt-status.wt-error {
+  color: #ea4335;
+}
+
+/* ── 动画 ────────────────────────────────────────────── */
+@keyframes wt-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#wt-floating-panel {
+  animation: wt-fade-in 0.15s ease;
+}

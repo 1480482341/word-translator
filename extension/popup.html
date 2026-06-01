@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Translator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 280px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+    h2 {
+      font-size: 18px;
+      margin-bottom: 4px;
+      color: #1a73e8;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      font-size: 13px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background: #34a853; }
+    .status-dot.offline { background: #ea4335; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-secondary {
+      background: #fff;
+      color: #1a73e8;
+      border: 1px solid #dadce0;
+    }
+    .btn-secondary:hover { background: #e8f0fe; }
+    .tips {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #888;
+      line-height: 1.5;
+    }
+    .tips strong { color: #555; }
+  </style>
+</head>
+<body>
+  <h2>🔤 Word Translator</h2>
+  <p class="subtitle">选中英文 → 自动翻译成中文</p>
+
+  <div class="status-row">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">检查后端连接…</span>
+  </div>
+
+  <button class="btn btn-primary" id="btnAdmin">📋 打开管理页面</button>
+  <button class="btn btn-secondary" id="btnRefresh">🔄 刷新状态</button>
+
+  <p class="tips">
+    <strong>使用方法:</strong><br>
+    1. 在任意网页选中英文单词<br>
+    2. 浮动面板自动显示翻译<br>
+    3. 按 ESC 或点击空白处关闭
+  </p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
