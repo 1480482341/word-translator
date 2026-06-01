@@ -8,14 +8,46 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-// 使用 MyMemory 免费翻译 API（国内可访问，无需 Key）
-async function translateText(text) {
+// ── 翻译引擎（优先微软翻译，无 Key 时回退 MyMemory）─────────
+const MS_KEY = process.env.MS_TRANSLATOR_KEY || '';
+const MS_REGION = process.env.MS_TRANSLATOR_REGION || 'eastasia';
+
+async function translateWithMicrosoft(text) {
+  const url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=zh-Hans';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Ocp-Apim-Subscription-Key': MS_KEY,
+      'Ocp-Apim-Subscription-Region': MS_REGION,
+    },
+    body: JSON.stringify([{ Text: text }]),
+  });
+  if (!res.ok) throw new Error(`微软翻译 API 返回 ${res.status}`);
+  const data = await res.json();
+  return data[0]?.translations?.[0]?.text || '';
+}
+
+async function translateWithMyMemory(text) {
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`翻译 API 返回 ${res.status}`);
+  if (!res.ok) throw new Error(`MyMemory API 返回 ${res.status}`);
   const data = await res.json();
   if (data.responseStatus !== 200) throw new Error(data.responseDetails || '翻译失败');
   return data.responseData.translatedText;
+}
+
+async function translateText(text) {
+  // 有微软 Key 就用微软翻译，失败时自动回退 MyMemory
+  if (MS_KEY) {
+    try {
+      return await translateWithMicrosoft(text);
+    } catch (err) {
+      console.warn('[翻译] 微软翻译失败，回退 MyMemory:', err.message);
+      return await translateWithMyMemory(text);
+    }
+  }
+  return await translateWithMyMemory(text);
 }
 const db = require('./db');
 
